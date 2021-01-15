@@ -1,7 +1,5 @@
 * Org-phabricator
 
-  -----
-
   Phabricator integration with Emacs org-mode.
 
   Currently, includes:

@@ -9,7 +9,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 4
+;;     Update #: 6
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -51,6 +51,7 @@
 
 ;;;; Features
 (require 'org-ph-export)
+(provide 'org-ph)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; org-ph.el ends here

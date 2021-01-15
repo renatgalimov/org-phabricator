@@ -7,10 +7,10 @@
 ;; Created: Пт янв 15 20:26:21 2021 (+0300)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Пт янв 15 20:32:58 2021 (+0300)
+;; Last-Updated: Пт янв 15 21:31:41 2021 (+0300)
 ;;           By: Renat Galimov
-;;     Update #: 11
-;; URL:
+;;     Update #: 30
+;; URL: https://github.com/renatgalimov/org-phabricator
 ;; Doc URL:
 ;; Keywords:
 ;; Compatibility:
@@ -45,7 +45,9 @@
 ;;
 ;;; Code:
 
-
+(require 'ox)
+(require 'org)
+(require 'seq)
 
 (org-export-define-derived-backend 'remarkup 'md
   :filters-alist '((:filter-final-output . org-ph-remarkup-final-function))
@@ -69,13 +71,16 @@
          (name-str (when name (format "name=\"%s\"" name))))
     (mapconcat
      'identity
-     `(,src-lang-str ,name-str)
+     (seq-filter 'identity `(,src-lang-str ,name-str))
      ",")))
 
 (defun org-ph-remarkup-src-block (src-block _contents info)
   "Transcode SRC-BLOCK element into Markdown format.
 CONTENTS is nil.  INFO is a plist used as a communication
-channel."
+channel.
+
+This also prepends every line of the code block with the `\^?'
+escape sequence which will be stripped out the a final filter."
   (replace-regexp-in-string
    "^" "\"
    (concat
@@ -125,8 +130,6 @@ a communication channel."
   "Clean CONTENTS from control characters.  INFO is a plist used as a communication channel."
   (replace-regexp-in-string "^[ \t]+$\\|\^?" "" contents))
 
-
-
 ;;; Interactive function
 
 ;;;###autoload
@@ -156,6 +159,8 @@ non-nil."
   (org-export-to-buffer 'remarkup "*Org Remarkup Export*"
     async subtreep visible-only nil nil (lambda () (text-mode))))
 
+(provide 'org-ph-export)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; org-ph-export.el ends here
