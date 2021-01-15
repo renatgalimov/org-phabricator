@@ -1,0 +1,10 @@
+* Org-phabricator
+
+  -----
+
+  Phabricator integration with Emacs org-mode.
+
+  Currently, includes:
+
+  - Importing tasks
+  - Exporting org files to remarkup
