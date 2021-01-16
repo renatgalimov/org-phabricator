@@ -6,3 +6,27 @@
 
   - Importing tasks
   - Exporting org files to remarkup
+
+* Installation
+
+  Clone the repository somewhere, for example into your =.emacs.d/= and add the repo directory into your =load-path=.
+
+  #+NAME: .emacs
+  #+begin_src emacs-lisp :exports code
+    ;; ...
+    (add-to-list 'load-path "~/.emacs.d/org-phabricator")
+    (require 'org-ph)
+    ;; ...
+  #+end_src
+
+* Usage
+
+  To export a buffer do =M-x org-export-dispatch r R=. This will export the code block
+
+  The current version gives a very limited org-export functionality.
+
+  - [x] Headings
+  - [x] Hyperlinks
+  - [x] Lists
+  - [x] Code blocks
+  - [ ] Images
