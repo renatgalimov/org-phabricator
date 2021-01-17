@@ -1,0 +1,99 @@
+#+TITLE: Is not rendered yet
+
+* Org-phabricator export example
+  This document shows mostly what's wrong, not what's right.
+
+** Code blocks
+
+   #+NAME: You can name source code blocks
+   #+begin_src python
+     def syntax_highlight_supported():
+         return True
+   #+end_src
+
+
+   #+NAME: You can name source code blocks
+   #+begin_src python :results output :wrap src json
+     import json
+
+     print(json.dumps({"lorem": True}))
+   #+end_src
+
+   #+RESULTS: You can name source code blocks
+   #+begin_src json
+   {"lorem": true}
+   #+end_src
+
+
+** Other blocks
+*** Drawer
+    :DRAWER:
+    Lorem ipsum dolor sit amet, consectetur adipiscing
+    elit. Integer pretium, mi sed varius placerat, velit lectus laoreet
+    nisl, gravida dictum sapien ligula sit amet enim. Vestibulum
+    molestie lacinia magna vitae aliquet. Suspendisse aliquet lorem eu
+    luctus semper. Proin quis commodo augue. Pellentesque ultricies
+    velit egestas libero tempor blandit. Etiam quis ex tellus. Praesent
+    eget sodales ligula. Sed risus ante, suscipit consectetur iaculis
+    at, laoreet quis sem. Donec ante risus, tristique pretium semper
+    in, iaculis in risus.
+    :END:
+
+*** Quote
+    #+begin_quote
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer
+    pretium, mi sed varius placerat, velit lectus laoreet nisl, gravida
+    dictum sapien ligula sit amet enim. Vestibulum molestie lacinia
+    magna vitae aliquet. Suspendisse aliquet lorem eu luctus
+    semper. Proin quis commodo augue. Pellentesque ultricies velit
+    egestas libero tempor blandit. Etiam quis ex tellus. Praesent eget
+    sodales ligula. Sed risus ante, suscipit consectetur iaculis at,
+    laoreet quis sem. Donec ante risus, tristique pretium semper in,
+    iaculis in risus.
+    #+end_quote
+
+*** Example
+    #+begin_example
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer
+    pretium, mi sed varius placerat, velit lectus laoreet nisl, gravida
+    dictum sapien ligula sit amet enim. Vestibulum molestie lacinia
+    magna vitae aliquet. Suspendisse aliquet lorem eu luctus
+    semper. Proin quis commodo augue. Pellentesque ultricies velit
+    egestas libero tempor blandit. Etiam quis ex tellus. Praesent eget
+    sodales ligula. Sed risus ante, suscipit consectetur iaculis at,
+    laoreet quis sem. Donec ante risus, tristique pretium semper in,
+    iaculis in risus.
+    #+end_example
+
+** Lists
+
+   In general, they're supported.
+
+   - Apple
+   - Banana
+   - Long item. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer pretium, mi sed varius placerat, velit lectus laoreet nisl, gravida dictum sapien ligula sit amet enim. Vestibulum molestie lacinia magna vitae aliquet. Suspendisse aliquet lorem eu luctus semper. Proin quis commodo augue. Pellentesque ultricies velit egestas libero tempor blandit. Etiam quis ex tellus. Praesent eget sodales ligula. Sed risus ante, suscipit consectetur iaculis at, laoreet quis sem. Donec ante risus, tristique pretium semper in, iaculis in risus.
+   - Multi-line item. Lorem ipsum dolor sit amet, consectetur
+     adipiscing elit. Integer pretium, mi sed varius placerat, velit
+     lectus laoreet nisl, gravida dictum sapien ligula sit amet
+     enim. Vestibulum molestie lacinia magna vitae
+     aliquet. Suspendisse aliquet lorem eu luctus semper. Proin quis
+     commodo augue. Pellentesque ultricies velit egestas libero tempor
+     blandit. Etiam quis ex tellus. Praesent eget sodales ligula. Sed
+     risus ante, suscipit consectetur iaculis at, laoreet quis
+     sem. Donec ante risus, tristique pretium semper in, iaculis in
+     risus.
+   - Nesting
+     + Level 1.1
+       * Level 1.1.1
+     + Level 1.2
+       * Level 1.2.1
+       * Level 1.2.2
+     + Level 1.3
+       * Level 1.3.1
+       * Level 1.3.2
+       * Level 1.3.3
+   - Checkboxes [1/2]
+     - [X] Filled
+     - [-] Semi-filled
+       - [ ] Empty
+       - [X] Filled
