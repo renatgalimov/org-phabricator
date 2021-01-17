@@ -9,7 +9,8 @@
 
 * Installation
 
-  Clone the repository somewhere, for example into your =.emacs.d/= and add the repo directory into your =load-path=.
+  Clone the repository somewhere, for example into your =.emacs.d/=
+  and add the repo directory into your =load-path=.
 
   #+NAME: .emacs
   #+begin_src emacs-lisp :exports code
@@ -21,12 +22,27 @@
 
 * Usage
 
-  To export a buffer do =M-x org-export-dispatch r R=. This will export the code block
+** Exporting
 
-  The current version gives a very limited org-export functionality.
+   To export a buffer do =M-x org-export-dispatch r R=. This will
+   export the code block
 
-  - [x] Headings
-  - [x] Hyperlinks
-  - [x] Lists
-  - [x] Code blocks
-  - [ ] Images
+   The current version gives a very limited org-export functionality.
+
+   - [x] Headings
+   - [x] Hyperlinks
+   - [x] Lists
+   - [x] Code blocks
+   - [ ] Images
+
+** Fetching new tasks
+
+   A command =org-ph-fetch-see-new-tasks= will pop up a
+   =*Phabricator*= buffer with all the taks assigned to you.
+
+   Every task will contain the Phabricator ID in the =PHABRICATOR_ID=
+   property. If a task with the same ID exists among your agenda
+   files, it won't appear in the =org-ph-fetch-see-new-tasks= output.
+
+   Also, every exported task will container a description from
+   Phabricator in the =PHABRICATOR_DESCRIPTION= property.
