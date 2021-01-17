@@ -1,4 +1,4 @@
-;;; org-ph.el ---
+;;; org-ph.el --- Phabricator interaction with Org-mode
 ;;
 ;; Filename: org-ph.el
 ;; Description:
@@ -9,7 +9,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 6
+;;     Update #: 26
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -51,6 +51,7 @@
 
 ;;;; Features
 (require 'org-ph-export)
+(require 'org-ph-fetch)
 (provide 'org-ph)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

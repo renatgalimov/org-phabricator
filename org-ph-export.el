@@ -7,9 +7,9 @@
 ;; Created: Пт янв 15 20:26:21 2021 (+0300)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Пт янв 15 21:31:41 2021 (+0300)
+;; Last-Updated: Вс янв 17 12:46:26 2021 (+0300)
 ;;           By: Renat Galimov
-;;     Update #: 30
+;;     Update #: 38
 ;; URL: https://github.com/renatgalimov/org-phabricator
 ;; Doc URL:
 ;; Keywords:
@@ -45,8 +45,9 @@
 ;;
 ;;; Code:
 
-(require 'ox)
 (require 'org)
+(require 'ox)
+(require 'ox-md)
 (require 'seq)
 
 (org-export-define-derived-backend 'remarkup 'md
