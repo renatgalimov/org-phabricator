@@ -7,9 +7,9 @@
 ;; Created: Пт янв 15 20:26:21 2021 (+0300)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Вс янв 17 12:46:26 2021 (+0300)
+;; Last-Updated: Вт мар  2 14:05:38 2021 (+0300)
 ;;           By: Renat Galimov
-;;     Update #: 38
+;;     Update #: 112
 ;; URL: https://github.com/renatgalimov/org-phabricator
 ;; Doc URL:
 ;; Keywords:
@@ -62,6 +62,9 @@
                      (example-block . org-ph-remarkup-src-block)
                      (item . org-ph-remarkup-item)
                      (timestamp . org-ph-remarkup-timestamp)
+                     (table . org-ph--remarkup-table)
+                     (table-row . org-ph--remarkup-table-row)
+                     (table-cell . org-ph--remarkup-table-cell)
                      ))
 
 (defun org-ph--src-block-header (src-block)
@@ -74,6 +77,63 @@
      'identity
      (seq-filter 'identity `(,src-lang-str ,name-str))
      ",")))
+
+(defun org-ph--remarkup-table (table contents info)
+  "Transcode a TABLE element from Org to HTML.
+CONTENTS is the contents of the table.  INFO is a plist holding
+contextual information."
+  (if (eq (org-element-property :type table) 'table.el)
+      ;; "table.el" table.  Convert it using appropriate tools.
+      (org-html-table--table.el-table table info)
+    ;; Standard table.
+    (format "<table>\n%s\n</table>"
+	          contents)))
+
+
+(defun org-ph--remarkup-table-row (table-row contents info)
+  "Transcode a TABLE-ROW element from Org to HTML.
+CONTENTS is the contents of the row.  INFO is a plist used as a
+communication channel."
+  ;; Rules are ignored since table separators are deduced from
+  ;; borders of the current row.
+  (when (eq (org-element-property :type table-row) 'standard)
+	(concat "\n"
+		    "<tr>"
+		    contents
+		    "\n"
+		    "</tr>")))
+
+
+
+(defun org-ph--is-first-group (table-row info)
+  (= 1 (org-export-table-row-group table-row info))
+  )
+
+
+(defun org-ph--remarkup-table-cell (table-cell contents info)
+  "Transcode a TABLE-CELL element from Org to HTML.
+CONTENTS is nil.  INFO is a plist used as a communication
+channel."
+  (let* ((table-row (org-export-get-parent table-cell))
+	     (table (org-export-get-parent-table table-cell))
+	     (cell-attrs
+	      (if (not (plist-get info :html-table-align-individual-fields)) ""
+	        (format (if (and (boundp 'org-html-format-table-no-css)
+			                 org-html-format-table-no-css)
+			            " align=\"%s\"" " class=\"org-%s\"")
+		            (org-export-table-cell-alignment table-cell info)))))
+    (when (or (not contents) (string= "" (org-trim contents)))
+      (setq contents "&#xa0;"))
+    (cond
+     ((and (org-export-table-has-header-p table info)
+	       (= 1 (org-export-table-row-group table-row info)))
+	  (concat "\n<th>" contents"</th>"))
+     ((and (plist-get info :html-table-use-header-tags-for-first-column)
+	       (zerop (cdr (org-export-table-cell-address table-cell info))))
+      (concat "\n<th>" contents"</th>"))
+     (t (let ((data-tags (plist-get info :html-table-data-tags)))
+          (concat "\n<td>" contents"</td>"))))))
+
 
 (defun org-ph-remarkup-src-block (src-block _contents info)
   "Transcode SRC-BLOCK element into Markdown format.
