@@ -8,9 +8,9 @@
 ;; Created: Вс янв 17 11:50:40 2021 (+0300)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Вс янв 17 13:08:27 2021 (+0300)
+;; Last-Updated: Ср фев  3 13:38:00 2021 (+0300)
 ;;           By: Renat Galimov
-;;     Update #: 27
+;;     Update #: 40
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -118,7 +118,7 @@ ARGS -
     (dolist (status statuses)
       (let ((query-arg (format "constraints[statuses][%d]" i)))
         (push `(,query-arg . ,status) constraints))
-        (setq i (1+ i)))
+      (setq i (1+ i)))
     constraints
     ))
 
@@ -215,7 +215,7 @@ Supported ARGS:
       (iter-do (task tasks)
         (let ((task-id (format "T%s" (alist-get 'id task))))
           (when (not (member task-id exclude))
-              (insert (format "%s\n" (org-ph-fetch-format-task task))))))
+            (insert (format "%s\n" (org-ph-fetch-format-task task))))))
       (org-mode)
       (pop-to-buffer (current-buffer)))))
 
@@ -223,8 +223,8 @@ Supported ARGS:
 (defun org-ph-fetch-get-closed-task-ids ()
   "Get id's of tasks defined in `org-agenda-buffers` and having closed status."
   (let* ((all-task-ids (org-ph-fetch--id-to-int (org-ph-fetch--get-existing-task-ids)))
-        (tasks (org-ph-fetch-iter-tasks :ids all-task-ids :statuses '(resolved wontfix spite)))
-        (result '()))
+         (tasks (org-ph-fetch-iter-tasks :ids all-task-ids :statuses '(resolved wontfix spite)))
+         (result '()))
     (iter-do (task tasks)
       (push (alist-get 'id task) result))
     result))
@@ -260,16 +260,19 @@ Supported ARGS:
    "-PHABRICATOR_ID=\"\""
    'agenda))
 
-
 (defun org-ph-fetch-see-new-tasks()
   "Pop a buffer with new tasks assigned to me."
   (interactive)
-  (org-ph-fetch-see-tasks
-   :statuses '(open)
-   :assigned `(,org-ph-fetch-user-id)
-   :exclude (org-ph-fetch--get-existing-task-ids)))
+  (cond
+   ((or (not org-ph-fetch-user-id) (string-empty-p org-ph-fetch-user-id))
+    (error "Variable org-ph-fetch-user-id is empty or not defined"))
+   (t
+    (org-ph-fetch-see-tasks
+     :statuses '(open)
+     :assigned `(,org-ph-fetch-user-id)
+     :exclude (org-ph-fetch--get-existing-task-ids)))))
 
-(provide 'org-ph-fetch)
+  (provide 'org-ph-fetch)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; org-ph-fetch.el ends here
