@@ -33,6 +33,7 @@
    - [x] Hyperlinks
    - [x] Lists
    - [x] Code blocks
+   - [x] Tables
    - [ ] Images
 
 ** Fetching new tasks
