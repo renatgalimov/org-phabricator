@@ -7,9 +7,9 @@
 ;; Created: Пт янв 15 20:26:21 2021 (+0300)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Вт мар  2 14:05:38 2021 (+0300)
+;; Last-Updated: Пн мая 17 09:33:47 2021 (+0300)
 ;;           By: Renat Galimov
-;;     Update #: 112
+;;     Update #: 130
 ;; URL: https://github.com/renatgalimov/org-phabricator
 ;; Doc URL:
 ;; Keywords:
@@ -61,7 +61,9 @@
                      (src-block . org-ph-remarkup-src-block)
                      (example-block . org-ph-remarkup-src-block)
                      (item . org-ph-remarkup-item)
+                     (inner-template . org-ph-inner-template)
                      (timestamp . org-ph-remarkup-timestamp)
+                     (headline . org-ph-headline)
                      (table . org-ph--remarkup-table)
                      (table-row . org-ph--remarkup-table-row)
                      (table-cell . org-ph--remarkup-table-cell)
@@ -190,6 +192,108 @@ a communication channel."
 (defun org-ph-remarkup-final-function (contents _backend info)
   "Clean CONTENTS from control characters.  INFO is a plist used as a communication channel."
   (replace-regexp-in-string "^[ \t]+$\\|\^?" "" contents))
+
+
+
+(defun org-ph--build-toc (info &optional n _keyword scope)
+  "Return a table of contents.
+
+INFO is a plist used as a communication channel.
+
+Optional argument N, when non-nil, is an integer specifying the
+depth of the table.
+
+When optional argument SCOPE is non-nil, build a table of
+contents according to the specified element."
+  (concat
+   (unless scope
+     (let ((style (plist-get info :md-headline-style))
+	       (title (org-html--translate "Table of Contents" info)))
+       (org-md--headline-title style 1 title nil)))
+   (mapconcat
+    (lambda (headline)
+      (let* ((indentation
+	          (make-string
+	           (* 4 (1- (org-export-get-relative-level headline info)))
+	           ?\s))
+	         (bullet
+	          (if (not (org-export-numbered-headline-p headline info)) "-   "
+		        (let ((prefix
+		               (format "%d." (org-last (org-export-get-headline-number
+						                        headline info)))))
+		          (concat prefix (make-string (max 1 (- 4 (length prefix)))
+					                          ?\s)))))
+	         (title
+		      (org-export-data-with-backend
+		       (org-export-get-alt-title headline info)
+		       (org-export-toc-entry-backend 'md)
+		       info))
+	         (tags (and (plist-get info :with-tags)
+			            (not (eq 'not-in-toc (plist-get info :with-tags)))
+			            (org-make-tag-string
+			             (org-export-get-tags headline info)))))
+	    (concat indentation bullet title tags)))
+    (org-export-collect-headlines info n scope) "\n")
+   "\n"))
+
+(defun org-ph-inner-template (contents info)
+  "Return body of document after converting it to Remarkup syntax.
+CONTENTS is the transcoded contents string.  INFO is a plist
+holding export options."
+  ;; Make sure CONTENTS is separated from table of contents and
+  ;; footnotes with at least a blank line.
+  (concat
+   ;; Table of contents.
+   (let ((depth (plist-get info :with-toc)))
+     (when depth
+       (concat (org-ph--build-toc info (and (wholenump depth) depth)) "\n")))
+   ;; Document contents.
+   contents
+   "\n"
+   ;; Footnotes section.
+   (org-md--footnote-section info)))
+
+
+;;;; Headline
+
+(defun org-ph-headline (headline contents info)
+  "Transcode HEADLINE element into Markdown format.
+CONTENTS is the headline contents.  INFO is a plist used as
+a communication channel."
+  (unless (org-element-property :footnote-section-p headline)
+    (let* ((level (org-export-get-relative-level headline info))
+	   (title (org-export-data (org-element-property :title headline) info))
+	   (todo (and (plist-get info :with-todo-keywords)
+		      (let ((todo (org-element-property :todo-keyword
+							headline)))
+			(and todo (concat (org-export-data todo info) " ")))))
+	   (tags (and (plist-get info :with-tags)
+		      (let ((tag-list (org-export-get-tags headline info)))
+			(and tag-list
+			     (concat "     " (org-make-tag-string tag-list))))))
+	   (priority
+	    (and (plist-get info :with-priority)
+		 (let ((char (org-element-property :priority headline)))
+		   (and char (format "[#%c] " char)))))
+	   ;; Headline text without tags.
+	   (heading (concat todo priority title))
+	   (style (plist-get info :md-headline-style)))
+      (cond
+       ;; Cannot create a headline.  Fall-back to a list.
+       ((or (org-export-low-level-p headline info)
+	    (not (memq style '(atx setext)))
+	    (and (eq style 'atx) (> level 6))
+	    (and (eq style 'setext) (> level 2)))
+	(let ((bullet
+	       (if (not (org-export-numbered-headline-p headline info)) "-"
+		 (concat (number-to-string
+			  (car (last (org-export-get-headline-number
+				      headline info))))
+			 "."))))
+	  (concat bullet (make-string (- 4 (length bullet)) ?\s) heading tags "\n\n"
+		  (and contents (replace-regexp-in-string "^" "    " contents)))))
+       (t
+	    (concat (org-md--headline-title style level heading nil tags) contents))))))
 
 ;;; Interactive function
 
