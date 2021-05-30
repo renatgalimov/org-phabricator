@@ -8,9 +8,9 @@
 ;; Created: Вс янв 17 11:50:40 2021 (+0300)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Ср фев  3 13:38:00 2021 (+0300)
+;; Last-Updated: Сб мая 29 08:54:16 2021 (+0300)
 ;;           By: Renat Galimov
-;;     Update #: 40
+;;     Update #: 135
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -75,7 +75,7 @@ Don't include the leading \"@\" when setting it up here."
 
 (defvar org-ph-fetch-see-tasks-buffer-name "*Phabricator*")
 
-
+;;
 (defun org-ph-fetch-endpoint-url (endpoint)
   "Make phabricator URL for the `ENDPOINT`."
   (let* ((url (url-generic-parse-url org-ph-fetch-api-url))
@@ -90,14 +90,18 @@ Don't include the leading \"@\" when setting it up here."
 ARGS -
     :ids      - an integer list of task ids
     :statuses - a string list of possible statuses
-    :assigned - a string list of assignee PHIDs"
+    :assigned - a string list of assignee PHIDs
+    :phids    - a string list of phids"
   (let ((i 0)
         (constraints '())
         (ids (or (plist-get args :ids) '()))
+        (phids (or (plist-get args :phids) '()))
         (statuses (or (plist-get args :statuses) '()))
         (assigned (or (plist-get args :assigned) '())))
     (if (not (sequencep ids))
         (error ":ids should be of a sequence type"))
+    (if (not (sequencep phids))
+        (error ":phids should be of a sequence type"))
     (if (not (sequencep statuses))
         (error ":statuses should be of a sequence type"))
     (if (not (sequencep assigned))
@@ -106,6 +110,12 @@ ARGS -
     (dolist (id ids)
       (let ((query-arg (format "constraints[ids][%d]" i)))
         (push `(,query-arg . ,id) constraints))
+      (setq i (1+ i)))
+
+    (setq i 0)
+    (dolist (phid phids)
+      (let ((query-arg (format "constraints[phids][%d]" i)))
+        (push `(,query-arg . ,phid) constraints))
       (setq i (1+ i)))
 
     (setq i 0)
@@ -119,8 +129,61 @@ ARGS -
       (let ((query-arg (format "constraints[statuses][%d]" i)))
         (push `(,query-arg . ,status) constraints))
       (setq i (1+ i)))
+
     constraints
     ))
+
+
+(defun org-ph-fetch-upload-file (filename)
+  "Upload a file from FILENAME.
+Returns phabricator file id like FXXXX"
+  (let* ((file-content
+	      (with-temp-buffer
+	        (insert-file-contents-literally filename)
+	        (base64-encode-region (point-min) (point-max) t)
+	        (buffer-string)))
+         (data `(("api.token" . ,org-ph-fetch-api-token)
+                 ("data_base64" . ,file-content)
+                 ("name" .  ,(file-name-nondirectory filename))))
+         (phid nil)
+         (error-info nil)
+         )
+
+    (request (org-ph-fetch-endpoint-url "file.upload")
+      :parser 'json-read
+      :type "POST"
+      :data data
+      :sync t
+      :success (cl-function
+                (lambda (&key data &allow-other-keys)
+                  (when data
+                    (setq error-info (alist-get 'error_info data))
+                    (when (not (string-blank-p (or error-info "")))
+                      (error "Cannot upload file: %s" error-info))
+                    (setq phid (alist-get 'result data)))))
+      :error (cl-function
+              (lambda (&key error-thrown &allow-other-keys)
+                (error "Can't upload file: %S" (alist-get 'result error-thrown)))))
+
+    (let ((data `(("api.token" . ,org-ph-fetch-api-token)
+                  ("constraints[phids][0]" . ,phid)))
+          (file-id nil))
+      (request (org-ph-fetch-endpoint-url "file.search")
+        :parser 'json-read
+        :type "POST"
+        :data data
+        :sync t
+        :success (cl-function
+                  (lambda (&key data &allow-other-keys)
+                    (when data
+                      (setq error-info (alist-get 'error_info data))
+                      (when (not (string-blank-p (or error-info "")))
+                        (error "Cannot upload file: %s" error-info))
+                      (setq file-id (format "F%s" (alist-get 'id (elt (alist-get 'data (alist-get 'result data)) 0)))))))
+        :error (cl-function
+                (lambda (&key error-thrown &allow-other-keys)
+                  (error "Can't upload file: %S" (alist-get 'result error-thrown)))))
+      file-id)))
 
 
 (iter-defun org-ph-fetch-iter-tasks (&rest args)

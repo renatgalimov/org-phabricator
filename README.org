@@ -34,7 +34,8 @@
    - [x] Lists
    - [x] Code blocks
    - [x] Tables
-   - [ ] Images
+   - [x] Images
+   - [x] Files
 
 ** Fetching new tasks
 
@@ -47,3 +48,8 @@
 
    Also, every exported task will container a description from
    Phabricator in the =PHABRICATOR_DESCRIPTION= property.
+
+** Exporting files
+   On the file link execute =org-ph-upload-file=. =#+attr_remarkup:
+   :id FXXXX= will appear on success. On export links with such an
+   attribute will be replaced with their inline id: ={FXXXX}=.

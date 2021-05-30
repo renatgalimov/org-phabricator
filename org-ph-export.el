@@ -7,9 +7,9 @@
 ;; Created: Пт янв 15 20:26:21 2021 (+0300)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Пн мая 17 09:33:47 2021 (+0300)
+;; Last-Updated: Вс мая 30 08:01:38 2021 (+0300)
 ;;           By: Renat Galimov
-;;     Update #: 130
+;;     Update #: 261
 ;; URL: https://github.com/renatgalimov/org-phabricator
 ;; Doc URL:
 ;; Keywords:
@@ -64,6 +64,8 @@
                      (inner-template . org-ph-inner-template)
                      (timestamp . org-ph-remarkup-timestamp)
                      (headline . org-ph-headline)
+                     (strike-through . org-ph-strike-through)
+                     (link . org-ph-link)
                      (table . org-ph--remarkup-table)
                      (table-row . org-ph--remarkup-table-row)
                      (table-cell . org-ph--remarkup-table-cell)
@@ -72,12 +74,17 @@
 (defun org-ph--src-block-header (src-block)
   "Build a remarkup soruce code header for SRC-BLOCK."
   (let* ((src-lang (org-element-property :language src-block))
-         (name (org-element-property :name src-block))
+         (caption (or (car (car (car (org-element-property :caption src-block)))) ""))
+         (name (or (org-element-property :name src-block) ""))
          (src-lang-str (when src-lang (format "lang=%s" src-lang)))
-         (name-str (when name (format "name=\"%s\"" name))))
+         (name-str (cond ((and (not (string-blank-p caption)) (not (string-blank-p name))) (format "%s (%s)" caption name))
+                         ((not (string-blank-p caption)) caption)
+                         ((not (string-blank-p name)) name)
+                         (t nil)))
+         (name-part (when name-str (format "name=\"%s\"" name-str))))
     (mapconcat
      'identity
-     (seq-filter 'identity `(,src-lang-str ,name-str))
+     (seq-filter 'identity `(,src-lang-str ,name-part "lines=12"))
      ",")))
 
 (defun org-ph--remarkup-table (table contents info)
@@ -135,6 +142,13 @@ channel."
       (concat "\n<th>" contents"</th>"))
      (t (let ((data-tags (plist-get info :html-table-data-tags)))
           (concat "\n<td>" contents"</td>"))))))
+
+
+(defun org-ph-strike-through (_strike-through contents _info)
+  "Transcode BOLD object into Markdown format.
+CONTENTS is the text within bold markup.  INFO is a plist used as
+a communication channel."
+  (format "~~%s~~" contents))
 
 
 (defun org-ph-remarkup-src-block (src-block _contents info)
@@ -295,6 +309,88 @@ a communication channel."
        (t
 	    (concat (org-md--headline-title style level heading nil tags) contents))))))
 
+
+(defun org-ph-link (link desc info)
+  "Transcode LINK object into Markdown format.
+DESC is the description part of the link, or the empty string.
+INFO is a plist holding contextual information.  See
+`org-export-data'."
+  (let* ((link-org-files-as-md
+	      (lambda (raw-path)
+	        ;; Treat links to `file.org' as links to `file.md'.
+	        (if (string= ".org" (downcase (file-name-extension raw-path ".")))
+		        (concat (file-name-sans-extension raw-path) ".md")
+	          raw-path)))
+	     (type (org-element-property :type link))
+	     (raw-path (org-element-property :path link))
+         (attr-remarkup (org-export-read-attribute :attr_remarkup (org-element-property :parent link)))
+         (ph-id (plist-get attr-remarkup :id))
+	     (path (cond
+		        ((member type '("http" "https" "ftp" "mailto"))
+		         (concat type ":" raw-path))
+		        ((string-equal  type "file")
+		         (org-export-file-uri (funcall link-org-files-as-md raw-path)))
+		        (t raw-path))))
+    (cond
+     ;; Link type is handled by a special function.
+     ((org-export-custom-protocol-maybe link desc 'md info))
+     ((> (length ph-id) 0) (format "{%s}" ph-id))
+     ((member type '("custom-id" "id" "fuzzy"))
+      (let ((destination (if (string= type "fuzzy")
+			                 (org-export-resolve-fuzzy-link link info)
+			               (org-export-resolve-id-link link info))))
+	    (pcase (org-element-type destination)
+	      (`plain-text			; External file.
+	       (let ((path (funcall link-org-files-as-md destination)))
+	         (if (not desc) (format "<%s>" path)
+	           (format "[%s](%s)" desc path))))
+	      (`headline
+	       (format
+	        "[%s](#%s)"
+	        ;; Description.
+	        (cond ((org-string-nw-p desc))
+		          ((org-export-numbered-headline-p destination info)
+		           (mapconcat #'number-to-string
+			                  (org-export-get-headline-number destination info)
+			                  "."))
+		          (t (org-export-data (org-element-property :title destination)
+				                      info)))
+	        ;; Reference.
+	        (or (org-element-property :CUSTOM_ID destination)
+		        (org-export-get-reference destination info))))
+	      (_
+	       (let ((description
+		          (or (org-string-nw-p desc)
+		              (let ((number (org-export-get-ordinal destination info)))
+			            (cond
+			             ((not number) nil)
+			             ((atom number) (number-to-string number))
+			             (t (mapconcat #'number-to-string number ".")))))))
+	         (when description
+	           (format "[%s](#%s)"
+		               description
+		               (org-export-get-reference destination info))))))))
+     ;; Link is an image.
+     ((org-export-inline-image-p link org-html-inline-image-rules)
+      (let ((path (cond ((not (string-equal type "file"))
+			             (concat type ":" raw-path))
+			            ((not (file-name-absolute-p raw-path)) raw-path)
+			            (t (expand-file-name raw-path))))
+	        (caption (org-export-data
+		              (org-export-get-caption
+		               (org-export-get-parent-element link))
+		              info)))
+        (format "![img](%s)"
+		        (if (not (org-string-nw-p caption)) path
+		          (format "%s \"%s\"" path caption)))))
+     ((string= type "coderef")
+      (format (org-export-get-coderef-format path desc)
+	          (org-export-resolve-coderef path info)))
+     ((equal type "radio") desc)
+     (t (if (not desc) (format "<%s>" path)
+	      (format "[%s](%s)" desc path))))))
+
+
 ;;; Interactive function
 
 ;;;###autoload
@@ -323,6 +419,7 @@ non-nil."
   (interactive)
   (org-export-to-buffer 'remarkup "*Org Remarkup Export*"
     async subtreep visible-only nil nil (lambda () (text-mode))))
+
 
 (provide 'org-ph-export)
 
