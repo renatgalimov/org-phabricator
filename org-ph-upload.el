@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t -*-
 ;;; org-ph-upload.el ---
 ;;
 ;; Filename: org-ph-upload.el
@@ -9,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 140
+;;     Update #: 147
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -46,7 +47,6 @@
 ;;; Code:
 
 (require 'org-element)
-(require 'org-export)
 
 (defun org-ph--set-file-id (element id)
   "Set phabricator file ID to ELEMENT." (let* (
@@ -82,6 +82,7 @@
 
       (org-ph--set-file-id file-parent (org-ph-fetch-upload-file (org-element-property :path element))))))
 
+(provide 'org-ph-upload)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; org-ph-upload.el ends here
