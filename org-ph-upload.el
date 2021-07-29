@@ -10,7 +10,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 147
+;;     Update #: 158
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -79,8 +79,13 @@
 
     (if (> (length file-id) 0)
         (message "Element already has file id: %s" file-id)
+      (let* ((raw-link (org-element-property :raw-link (org-element-context)))
+             (path (org-element-property :path element))
+             (link (if (string-prefix-p "attachment:" raw-link)
+                       (org-attach-expand path)
+                     path)))
+        (org-ph--set-file-id file-parent (org-ph-fetch-upload-file link))))))
 
-      (org-ph--set-file-id file-parent (org-ph-fetch-upload-file (org-element-property :path element))))))
 
 (provide 'org-ph-upload)
 
