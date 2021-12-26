@@ -7,9 +7,9 @@
 ;; Created: Пт янв 15 20:26:21 2021 (+0300)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Вс мая 30 08:01:38 2021 (+0300)
-;;           By: Renat Galimov
-;;     Update #: 261
+;; Last-Updated: Fri Sep 17 17:25:31 2021 (+0300)
+;;           By: Ренат Галимов
+;;     Update #: 271
 ;; URL: https://github.com/renatgalimov/org-phabricator
 ;; Doc URL:
 ;; Keywords:
@@ -132,11 +132,11 @@ channel."
 			            " align=\"%s\"" " class=\"org-%s\"")
 		            (org-export-table-cell-alignment table-cell info)))))
     (when (or (not contents) (string= "" (org-trim contents)))
-      (setq contents "&#xa0;"))
+      (setq contents ""))
     (cond
      ((and (org-export-table-has-header-p table info)
 	       (= 1 (org-export-table-row-group table-row info)))
-	  (concat "\n<th>" contents"</th>"))
+	  (concat "\n<th>" contents "</th>"))
      ((and (plist-get info :html-table-use-header-tags-for-first-column)
 	       (zerop (cdr (org-export-table-cell-address table-cell info))))
       (concat "\n<th>" contents"</th>"))
@@ -157,7 +157,7 @@ CONTENTS is nil.  INFO is a plist used as a communication
 channel.
 
 This also prepends every line of the code block with the `\^?'
-escape sequence which will be stripped out the a final filter."
+escape sequence which will be stripped out in final filter."
   (replace-regexp-in-string
    "^" "\"
    (concat
@@ -205,7 +205,8 @@ a communication channel."
 
 (defun org-ph-remarkup-final-function (contents _backend info)
   "Clean CONTENTS from control characters.  INFO is a plist used as a communication channel."
-  (replace-regexp-in-string "^[ \t]+$\\|\^?" "" contents))
+
+  (replace-regexp-in-string "^[ \t]+$\\| *\^?" "" contents))
 
 
 
