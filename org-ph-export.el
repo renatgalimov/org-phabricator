@@ -7,9 +7,9 @@
 ;; Created: Пт янв 15 20:26:21 2021 (+0300)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Tue Feb 22 04:24:07 2022 (+0300)
+;; Last-Updated: Tue Feb 22 05:37:03 2022 (+0300)
 ;;           By: Renat Galimov
-;;     Update #: 357
+;;     Update #: 373
 ;; URL: https://github.com/renatgalimov/org-phabricator
 ;; Doc URL:
 ;; Keywords:
@@ -57,12 +57,20 @@
   :group 'org-phabricator)
 
 
+(defcustom org-ph-export-tag-render-style nil
+  "Define how to render tags."
+  :tag "Tag render style"
+  :type '(choice
+          (const :tag "Wrap the tag with `tag`." nil)
+          (const :tag "Wrap the tag with !!{icon tag}tag!!." highlight))
+  :group 'org-phabricator-export)
+
 (defcustom org-ph-export-todo-render-style nil
   "Define how to render TODO-like statuses."
   :tag "ToDo render style"
   :type '(choice
           (const :tag "Leave them as a text." nil)
-          (const :tag "Wrap TODO's with !!TODO!!." highlight)
+          (const :tag "Wrap TODOs with !!TODO!!." highlight)
           (const :tag "Replace TODO with an appropriate icon from `org-ph-export-todo-icon-alist'" icon))
   :group 'org-phabricator-export)
 
@@ -292,6 +300,13 @@ holding export options."
 
 ;;;; Headline
 
+(defun org-ph--highlight-tag (tag)
+  "Make!!{icon tag}TAG!"
+  (when tag
+    (cond ((eq org-ph-export-tag-render-style 'highlight)
+           (format "!!{icon tag}%s!!" tag))
+          (t (format "`%s`" tag)))))
+
 (defun org-ph--todo-icon (todo)
   "Get an {icon} for given TODO."
   (let ((icon (alist-get todo org-ph-export-todo-icon-alist nil nil 'equal)))
@@ -319,9 +334,7 @@ a communication channel."
 							                            headline)))
 			            (and todo (concat (org-ph--todo (org-export-data todo info)) " ")))))
 	       (tags (and (plist-get info :with-tags)
-		              (let ((tag-list (org-export-get-tags headline info)))
-			            (and tag-list
-			                 (concat "     " (org-make-tag-string tag-list))))))
+                      (concat "    " (mapconcat 'org-ph--highlight-tag (org-export-get-tags headline info) " "))))
 	       (priority
 	        (and (plist-get info :with-priority)
 		         (let ((char (org-element-property :priority headline)))
