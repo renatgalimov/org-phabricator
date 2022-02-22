@@ -24,7 +24,6 @@
    {"lorem": true}
    #+end_src
 
-
 ** Other blocks
 *** Drawer
     :DRAWER:
@@ -97,3 +96,11 @@
      - [-] Semi-filled
        - [ ] Empty
        - [X] Filled
+
+** ToDos
+*** TODO Built-in todo
+    -
+*** DONE Built-in done
+    -
+*** CANCELED Unknown ToDo item
+    -

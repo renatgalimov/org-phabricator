@@ -1,5 +1,4 @@
-;; -*- lexical-binding: t -*-
-;;; org-ph-fetch.el --- Allow fetching Phabricator tasks as org-mode TODOs
+;;; org-ph-fetch.el --- Allow fetching Phabricator tasks as org-mode TODOs -*- lexical-binding: t -*-
 ;;
 ;; Filename: org-ph-fetch.el
 ;; Description:
@@ -8,9 +7,9 @@
 ;; Created: Вс янв 17 11:50:40 2021 (+0300)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Tue Feb 22 03:29:00 2022 (+0300)
+;; Last-Updated: Tue Feb 22 04:23:13 2022 (+0300)
 ;;           By: Renat Galimov
-;;     Update #: 143
+;;     Update #: 144
 ;; URL:
 ;; Doc URL:
 ;; Keywords:

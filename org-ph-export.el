@@ -1,4 +1,4 @@
-;;; org-ph-export.el ---
+;;; org-ph-export.el --- -*- lexical-binding: t -*-
 ;;
 ;; Filename: org-ph-export.el
 ;; Description:
@@ -7,9 +7,9 @@
 ;; Created: Пт янв 15 20:26:21 2021 (+0300)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Tue Feb 22 03:55:24 2022 (+0300)
+;; Last-Updated: Tue Feb 22 04:24:07 2022 (+0300)
 ;;           By: Renat Galimov
-;;     Update #: 340
+;;     Update #: 357
 ;; URL: https://github.com/renatgalimov/org-phabricator
 ;; Doc URL:
 ;; Keywords:
@@ -66,7 +66,7 @@
           (const :tag "Replace TODO with an appropriate icon from `org-ph-export-todo-icon-alist'" icon))
   :group 'org-phabricator-export)
 
-(defcustom org-ph-export-todo-icon-alist '(("TODO" . "clipboard") ("DONE" . "clipboard-check"))
+(defcustom org-ph-export-todo-icon-alist '(("TODO" . "clipboard") ("DONE" . "check"))
   "Replace item statuses with {icon <icon-name>} on export."
   :tag "ToDo icon alist"
   :type '(alist :key-type (string :tag "ToDo") :value-type (string :tag "Icon name")
@@ -137,8 +137,7 @@ communication channel."
 
 
 (defun org-ph--is-first-group (table-row info)
-  (= 1 (org-export-table-row-group table-row info))
-  )
+  (= 1 (org-export-table-row-group table-row info)))
 
 
 (defun org-ph--remarkup-table-cell (table-cell contents info)
@@ -305,7 +304,7 @@ holding export options."
   (cond ((eq org-ph-export-todo-render-style 'highlight)
          (format "!!%s!!" todo))
         ((eq org-ph-export-todo-render-style 'icon)
-         (or (org-ph--todo-icon "TODO") todo))
+         (or (org-ph--todo-icon todo) todo))
         (t todo)))
 
 (defun org-ph-headline (headline contents info)

@@ -1,4 +1,4 @@
-;;; org-ph.el --- Phabricator interaction with Org-mode
+;;; org-ph.el --- Phabricator interaction with Org-mode -*- lexical-binding: t -*-
 ;;
 ;; Filename: org-ph.el
 ;; Description:
@@ -7,10 +7,10 @@
 ;; Created: Пт янв 15 20:33:19 2021 (+0300)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated:
-;;           By:
-;;     Update #: 35
-;; URL:
+;; Last-Updated: Tue Feb 22 04:23:57 2022 (+0300)
+;;           By: Renat Galimov
+;;     Update #: 39
+;; URL: https://github.com/renatgalimov/org-phabricator
 ;; Doc URL:
 ;; Keywords:
 ;; Compatibility:
