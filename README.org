@@ -29,7 +29,8 @@
 
    The current version gives a very limited org-export functionality.
 
-   - [x] Headings
+   - [X] Headings
+     - [X] ToDo's
    - [x] Hyperlinks
    - [x] Lists
    - [x] Code blocks

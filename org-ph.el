@@ -9,7 +9,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 27
+;;     Update #: 35
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -48,6 +48,11 @@
 ;;;; Dependencies
 
 (require 'org)
+
+(defgroup org-phabricator nil
+  "Emacs integration with Phabricator tool."
+  :tag "Org-Phabricator"
+  :group 'org)
 
 ;;;; Features
 (require 'org-ph-export)

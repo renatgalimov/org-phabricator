@@ -7,9 +7,9 @@
 ;; Created: Пт янв 15 20:26:21 2021 (+0300)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Fri Sep 17 17:25:31 2021 (+0300)
-;;           By: Ренат Галимов
-;;     Update #: 271
+;; Last-Updated: Tue Feb 22 03:55:24 2022 (+0300)
+;;           By: Renat Galimov
+;;     Update #: 340
 ;; URL: https://github.com/renatgalimov/org-phabricator
 ;; Doc URL:
 ;; Keywords:
@@ -49,6 +49,28 @@
 (require 'ox)
 (require 'ox-md)
 (require 'seq)
+
+
+(defgroup org-phabricator-export nil
+  "Configure exporting org nodes to Remarkup."
+  :tag "Org-Phabricator Export"
+  :group 'org-phabricator)
+
+
+(defcustom org-ph-export-todo-render-style nil
+  "Define how to render TODO-like statuses."
+  :tag "ToDo render style"
+  :type '(choice
+          (const :tag "Leave them as a text." nil)
+          (const :tag "Wrap TODO's with !!TODO!!." highlight)
+          (const :tag "Replace TODO with an appropriate icon from `org-ph-export-todo-icon-alist'" icon))
+  :group 'org-phabricator-export)
+
+(defcustom org-ph-export-todo-icon-alist '(("TODO" . "clipboard") ("DONE" . "clipboard-check"))
+  "Replace item statuses with {icon <icon-name>} on export."
+  :tag "ToDo icon alist"
+  :type '(alist :key-type (string :tag "ToDo") :value-type (string :tag "Icon name")
+  :group 'org-phabricator-export))
 
 (org-export-define-derived-backend 'remarkup 'md
   :filters-alist '((:filter-final-output . org-ph-remarkup-final-function))
@@ -271,42 +293,57 @@ holding export options."
 
 ;;;; Headline
 
+(defun org-ph--todo-icon (todo)
+  "Get an {icon} for given TODO."
+  (let ((icon (alist-get todo org-ph-export-todo-icon-alist nil nil 'equal)))
+    (when icon
+        (format "{icon %s}" icon))))
+
+
+(defun org-ph--todo (todo)
+  "Format TODO according to `org-ph-export-todo-render-style'."
+  (cond ((eq org-ph-export-todo-render-style 'highlight)
+         (format "!!%s!!" todo))
+        ((eq org-ph-export-todo-render-style 'icon)
+         (or (org-ph--todo-icon "TODO") todo))
+        (t todo)))
+
 (defun org-ph-headline (headline contents info)
   "Transcode HEADLINE element into Markdown format.
 CONTENTS is the headline contents.  INFO is a plist used as
 a communication channel."
   (unless (org-element-property :footnote-section-p headline)
     (let* ((level (org-export-get-relative-level headline info))
-	   (title (org-export-data (org-element-property :title headline) info))
-	   (todo (and (plist-get info :with-todo-keywords)
-		      (let ((todo (org-element-property :todo-keyword
-							headline)))
-			(and todo (concat (org-export-data todo info) " ")))))
-	   (tags (and (plist-get info :with-tags)
-		      (let ((tag-list (org-export-get-tags headline info)))
-			(and tag-list
-			     (concat "     " (org-make-tag-string tag-list))))))
-	   (priority
-	    (and (plist-get info :with-priority)
-		 (let ((char (org-element-property :priority headline)))
-		   (and char (format "[#%c] " char)))))
-	   ;; Headline text without tags.
-	   (heading (concat todo priority title))
-	   (style (plist-get info :md-headline-style)))
+	       (title (org-export-data (org-element-property :title headline) info))
+	       (todo (and (plist-get info :with-todo-keywords)
+		              (let ((todo (org-element-property :todo-keyword
+							                            headline)))
+			            (and todo (concat (org-ph--todo (org-export-data todo info)) " ")))))
+	       (tags (and (plist-get info :with-tags)
+		              (let ((tag-list (org-export-get-tags headline info)))
+			            (and tag-list
+			                 (concat "     " (org-make-tag-string tag-list))))))
+	       (priority
+	        (and (plist-get info :with-priority)
+		         (let ((char (org-element-property :priority headline)))
+		           (and char (format "[#%c] " char)))))
+	       ;; Headline text without tags.
+	       (heading (concat todo priority title))
+	       (style (plist-get info :md-headline-style)))
       (cond
        ;; Cannot create a headline.  Fall-back to a list.
        ((or (org-export-low-level-p headline info)
-	    (not (memq style '(atx setext)))
-	    (and (eq style 'atx) (> level 6))
-	    (and (eq style 'setext) (> level 2)))
-	(let ((bullet
-	       (if (not (org-export-numbered-headline-p headline info)) "-"
-		 (concat (number-to-string
-			  (car (last (org-export-get-headline-number
-				      headline info))))
-			 "."))))
-	  (concat bullet (make-string (- 4 (length bullet)) ?\s) heading tags "\n\n"
-		  (and contents (replace-regexp-in-string "^" "    " contents)))))
+	        (not (memq style '(atx setext)))
+	        (and (eq style 'atx) (> level 6))
+	        (and (eq style 'setext) (> level 2)))
+	    (let ((bullet
+	           (if (not (org-export-numbered-headline-p headline info)) "-"
+		         (concat (number-to-string
+			              (car (last (org-export-get-headline-number
+				                      headline info))))
+			             "."))))
+	      (concat bullet (make-string (- 4 (length bullet)) ?\s) heading tags "\n\n"
+		          (and contents (replace-regexp-in-string "^" "    " contents)))))
        (t
 	    (concat (org-md--headline-title style level heading nil tags) contents))))))
 

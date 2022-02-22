@@ -8,9 +8,9 @@
 ;; Created: Вс янв 17 11:50:40 2021 (+0300)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Вс мая 30 19:00:35 2021 (+0300)
+;; Last-Updated: Tue Feb 22 03:29:00 2022 (+0300)
 ;;           By: Renat Galimov
-;;     Update #: 136
+;;     Update #: 143
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -52,15 +52,23 @@
 (require 'generator)
 (require 'org)
 
+(defgroup org-phabricator-fetch nil
+  "Configure importing Phabricator tickets as `org-mode' nodes."
+  :tag "Org-Phabricator Fetch"
+  :group 'org-phabricator)
+
+
 (defcustom org-ph-fetch-api-url "https://secure.phabricator.com/api"
   "URL which all `org-phabricator' functions will use.
 You can get it from the examples section in any API documentation page."
+  :tag "API URL"
   :type 'string
-  :group 'org-phabricator
-  )
+  :group 'org-phabricator)
+
 (defcustom org-ph-fetch-api-token ""
   "Token used to authenticate API requests.
 Get it at \"https://phabricator.example.com/conduit/login\"."
+  :tag "API Token"
   :type 'string
   :group 'org-phabricator
   )
@@ -69,9 +77,9 @@ Get it at \"https://phabricator.example.com/conduit/login\"."
   "Your user id in phabricator.
 Is't how others mention you in ph.
 Don't include the leading \"@\" when setting it up here."
+  :tag "User ID"
   :type 'string
-  :group 'org-phabricator
-  )
+  :group 'org-phabricator)
 
 (defvar org-ph-fetch-see-tasks-buffer-name "*Phabricator*")
 
