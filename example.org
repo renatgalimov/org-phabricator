@@ -104,3 +104,5 @@
     -
 *** CANCELED Unknown ToDo item
     -
+** Tags                                             :sometag:ATTACH:othertag:
+   Tags are goot

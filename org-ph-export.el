@@ -7,9 +7,9 @@
 ;; Created: Пт янв 15 20:26:21 2021 (+0300)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Tue Feb 22 05:37:03 2022 (+0300)
+;; Last-Updated: Tue Feb 22 05:41:26 2022 (+0300)
 ;;           By: Renat Galimov
-;;     Update #: 373
+;;     Update #: 374
 ;; URL: https://github.com/renatgalimov/org-phabricator
 ;; Doc URL:
 ;; Keywords:
@@ -272,10 +272,10 @@ contents according to the specified element."
 		       (org-export-get-alt-title headline info)
 		       (org-export-toc-entry-backend 'md)
 		       info))
-	         (tags (and (plist-get info :with-tags)
+	         (tags (concat "  " (and (plist-get info :with-tags)
 			            (not (eq 'not-in-toc (plist-get info :with-tags)))
 			            (org-make-tag-string
-			             (org-export-get-tags headline info)))))
+			             (org-export-get-tags headline info))))))
 	    (concat indentation bullet title tags)))
     (org-export-collect-headlines info n scope) "\n")
    "\n"))
