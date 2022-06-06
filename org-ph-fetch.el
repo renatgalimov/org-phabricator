@@ -7,9 +7,9 @@
 ;; Created: Вс янв 17 11:50:40 2021 (+0300)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Tue Feb 22 04:23:13 2022 (+0300)
+;; Last-Updated: Fri Apr 15 11:13:09 2022 (+0300)
 ;;           By: Renat Galimov
-;;     Update #: 144
+;;     Update #: 152
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -154,7 +154,7 @@ Returns phabricator file id like FXXXX"
                  ("name" .  ,(file-name-nondirectory filename))))
          (phid nil)
          (error-info nil)
-         )
+         (request-backend 'url-retrieve))
 
     (request (org-ph-fetch-endpoint-url "file.upload")
       :parser 'json-read
@@ -174,7 +174,8 @@ Returns phabricator file id like FXXXX"
 
     (let ((data `(("api.token" . ,org-ph-fetch-api-token)
                   ("constraints[phids][0]" . ,phid)))
-          (file-id nil))
+          (file-id nil)
+          (request-backend 'url-retrieve))
       (request (org-ph-fetch-endpoint-url "file.search")
         :parser 'json-read
         :type "POST"
@@ -202,7 +203,8 @@ Returns phabricator file id like FXXXX"
          (after (plist-get args :after))
          (constraints (apply 'org-ph-fetch--tasks-constraints args))
          (data `(("api.token" . ,org-ph-fetch-api-token)
-                 ("limit" . "100"))))
+                 ("limit" . "100")))
+         (original-request-backend request-backend))
     (if after
         (push `(after . ,after) data)
       )
@@ -210,22 +212,28 @@ Returns phabricator file id like FXXXX"
     (dolist (constraint constraints)
       (push constraint data)
       )
+    (unwind-protect
+        (progn
+          (setq request-backend 'url-retrieve)
+        (request (org-ph-fetch-endpoint-url "maniphest.search")
+          :parser 'json-read
+          :type "POST"
+          :data data
+          :sync t
+          :success (cl-function
+                    (lambda (&key data &allow-other-keys)
+                      (when data
+                        (setq error-info (alist-get 'error_info data))
+                        (when (not error-info)
+                          (setq after (alist-get 'after (alist-get 'cursor (alist-get 'result data))))
+                          (setq tasks (alist-get 'data (alist-get 'result data)))))))
+          :error (cl-function
+                  (lambda (&key error-thrown &allow-other-keys)
+                    (error "Can't fetch tasks: %S" (alist-get 'result error-thrown)))))
+        )
+      (setq request-backend original-request-backend))
 
-    (request (org-ph-fetch-endpoint-url "maniphest.search")
-      :parser 'json-read
-      :type "POST"
-      :data data
-      :sync t
-      :success (cl-function
-                (lambda (&key data &allow-other-keys)
-                  (when data
-                    (setq error-info (alist-get 'error_info data))
-                    (when (not error-info)
-                      (setq after (alist-get 'after (alist-get 'cursor (alist-get 'result data))))
-                      (setq tasks (alist-get 'data (alist-get 'result data)))))))
-      :error (cl-function
-              (lambda (&key error-thrown &allow-other-keys)
-                (error "Can't fetch tasks: %S" (alist-get 'result error-thrown)))))
+
 
     (when error-info (error "Can't fetch tasks: %s" error-info))
 
