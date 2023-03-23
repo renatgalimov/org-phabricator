@@ -9,7 +9,7 @@
 ;; Package-Requires: ()
 ;; Last-Updated:
 ;;           By:
-;;     Update #: 160
+;;     Update #: 162
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -46,6 +46,7 @@
 ;;; Code:
 
 (require 'org-element)
+(require 'org-export)
 
 (defun org-ph--set-file-id (element id)
   "Set phabricator file ID to ELEMENT." (let* (
@@ -53,7 +54,7 @@
          (element-copy (org-element-copy element))
          (element-begin (org-element-property :begin element))
          (element-text (buffer-substring element-begin (org-element-property :end element)))
-         (indent-level (progn (string-match "^ +" element-text) (match-end 0))))
+         (indent-level (progn (string-match "^ *" element-text) (match-end 0))))
     (setq attr-remarkup (plist-put attr-remarkup :id id))
     (setq element-copy (org-element-put-property element-copy :attr_remarkup `(,(substring (format "%s" attr-remarkup) 1 -1))))
 

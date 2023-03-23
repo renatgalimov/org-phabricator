@@ -7,9 +7,9 @@
 ;; Created: Пт янв 15 20:26:21 2021 (+0300)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Tue Feb 22 05:41:26 2022 (+0300)
+;; Last-Updated: Fri Mar 17 13:05:59 2023 (+0300)
 ;;           By: Renat Galimov
-;;     Update #: 374
+;;     Update #: 379
 ;; URL: https://github.com/renatgalimov/org-phabricator
 ;; Doc URL:
 ;; Keywords:
@@ -95,6 +95,7 @@
                      (timestamp . org-ph-remarkup-timestamp)
                      (headline . org-ph-headline)
                      (strike-through . org-ph-strike-through)
+                     (italic . org-ph-italic)
                      (link . org-ph-link)
                      (table . org-ph--remarkup-table)
                      (table-row . org-ph--remarkup-table-row)
@@ -173,9 +174,16 @@ channel."
           (concat "\n<td>" contents"</td>"))))))
 
 
+(defun org-ph-italic (_italic contents _info)
+  "Transcode ITALIC object into Remarkup format.
+CONTENTS is the text within italic markup.  INFO is a plist used
+as a communication channel."
+  (format "//%s//" contents))
+
+
 (defun org-ph-strike-through (_strike-through contents _info)
-  "Transcode BOLD object into Markdown format.
-CONTENTS is the text within bold markup.  INFO is a plist used as
+  "Transcode strike-throught object into Remarkup format.
+CONTENTS is the text within strike-through markup.  INFO is a plist used as
 a communication channel."
   (format "~~%s~~" contents))
 
