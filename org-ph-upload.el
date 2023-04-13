@@ -46,7 +46,6 @@
 ;;; Code:
 
 (require 'org-element)
-(require 'org-export)
 
 (defun org-ph--set-file-id (element id)
   "Set phabricator file ID to ELEMENT." (let* (
