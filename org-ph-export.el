@@ -7,9 +7,9 @@
 ;; Created: Пт янв 15 20:26:21 2021 (+0300)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Fri Mar 17 13:05:59 2023 (+0300)
+;; Last-Updated: Thu May 11 12:26:04 2023 (+0300)
 ;;           By: Renat Galimov
-;;     Update #: 379
+;;     Update #: 380
 ;; URL: https://github.com/renatgalimov/org-phabricator
 ;; Doc URL:
 ;; Keywords:
@@ -90,6 +90,7 @@
                      ;;                     (clock . org-md-verbatim)
                      (src-block . org-ph-remarkup-src-block)
                      (example-block . org-ph-remarkup-src-block)
+                     (fixed-width . org-ph-remarkup-src-block)
                      (item . org-ph-remarkup-item)
                      (inner-template . org-ph-inner-template)
                      (timestamp . org-ph-remarkup-timestamp)
