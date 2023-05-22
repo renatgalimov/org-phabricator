@@ -7,9 +7,9 @@
 ;; Created: Пт янв 15 20:26:21 2021 (+0300)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Thu May 11 12:26:04 2023 (+0300)
+;; Last-Updated: Fri May 12 11:43:42 2023 (+0300)
 ;;           By: Renat Galimov
-;;     Update #: 380
+;;     Update #: 384
 ;; URL: https://github.com/renatgalimov/org-phabricator
 ;; Doc URL:
 ;; Keywords:
@@ -103,12 +103,18 @@
                      (table-cell . org-ph--remarkup-table-cell)
                      ))
 
+(defun org-ph--remap-languages (language)
+  "Remap org-src LANGUAGE to Remarkup language."
+  (if (string= language "sqlite")
+      "sql"
+    language))
+
 (defun org-ph--src-block-header (src-block)
   "Build a remarkup soruce code header for SRC-BLOCK."
   (let* ((src-lang (org-element-property :language src-block))
          (caption (or (car (car (car (org-element-property :caption src-block)))) ""))
          (name (or (org-element-property :name src-block) ""))
-         (src-lang-str (when src-lang (format "lang=%s" src-lang)))
+         (src-lang-str (when src-lang (format "lang=%s" (org-ph--remap-languages src-lang))))
          (name-str (cond ((and (not (string-blank-p caption)) (not (string-blank-p name))) (format "%s (%s)" caption name))
                          ((not (string-blank-p caption)) caption)
                          ((not (string-blank-p name)) name)
