@@ -7,9 +7,9 @@
 ;; Created: Пт янв 15 20:26:21 2021 (+0300)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Fri May 12 11:43:42 2023 (+0300)
+;; Last-Updated: Fri Jun 21 23:54:56 2024 (+0300)
 ;;           By: Renat Galimov
-;;     Update #: 384
+;;     Update #: 424
 ;; URL: https://github.com/renatgalimov/org-phabricator
 ;; Doc URL:
 ;; Keywords:
@@ -91,6 +91,7 @@
                      (src-block . org-ph-remarkup-src-block)
                      (example-block . org-ph-remarkup-src-block)
                      (fixed-width . org-ph-remarkup-src-block)
+                     (footnote-reference . org-ph-remarkup-footnote-reference)
                      (item . org-ph-remarkup-item)
                      (inner-template . org-ph-inner-template)
                      (timestamp . org-ph-remarkup-timestamp)
@@ -295,6 +296,42 @@ contents according to the specified element."
     (org-export-collect-headlines info n scope) "\n")
    "\n"))
 
+
+(defun org-ph--anchor (id desc attributes info)
+  "Format a Remarkup anchor."
+  (format "{anchor #%s}" id))
+
+(defun org-ph-remarkup-footnote-reference (footnote-reference _contents info)
+  "Transcode a FOOTNOTE-REFERENCE element from Org to Remarkup.
+CONTENTS is nil.  INFO is a plist holding contextual information."
+  (concat
+   ;; Insert separator between two footnotes in a row.
+   (let ((n (org-export-get-footnote-number footnote-reference info)))
+     (format "[[[ #fn%d | %d ]]]" n n ))))
+
+(defun org-ph--footnote-formatted (footnote info)
+  "Formats a single footnote entry FOOTNOTE.
+FOOTNOTE is a cons cell of the form (number . definition).
+INFO is a plist with contextual information."
+  (let* ((fn-num (car footnote))
+         (fn-text (cdr footnote)))
+    (format "[%d] {anchor #fn%d} %s\n" fn-num fn-num fn-text)))
+
+(defun org-ph--footnote-section (info)
+  "Format the footnote section.
+INFO is a plist used as a communication channel."
+  (let* ((fn-alist (org-export-collect-footnote-definitions info))
+         (fn-alist (cl-loop for (n _type raw) in fn-alist collect
+                            (cons n (org-trim (org-export-data raw info)))))
+         (headline-style (plist-get info :md-headline-style))
+         (section-title (org-html--translate "Footnotes" info)))
+    (when fn-alist
+      (format (plist-get info :md-footnotes-section)
+              (org-md--headline-title headline-style (plist-get info :md-toplevel-hlevel) section-title)
+              (mapconcat (lambda (fn) (org-ph--footnote-formatted fn info))
+                         fn-alist
+                         "\n")))))
+
 (defun org-ph-inner-template (contents info)
   "Return body of document after converting it to Remarkup syntax.
 CONTENTS is the transcoded contents string.  INFO is a plist
@@ -310,7 +347,7 @@ holding export options."
    contents
    "\n"
    ;; Footnotes section.
-   (org-md--footnote-section info)))
+   (org-ph--footnote-section info)))
 
 
 ;;;; Headline
