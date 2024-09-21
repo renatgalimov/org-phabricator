@@ -7,9 +7,9 @@
 ;; Created: Вс янв 17 11:50:40 2021 (+0300)
 ;; Version:
 ;; Package-Requires: ()
-;; Last-Updated: Fri Apr 15 11:13:09 2022 (+0300)
+;; Last-Updated: Sat Jun 22 01:09:51 2024 (+0300)
 ;;           By: Renat Galimov
-;;     Update #: 152
+;;     Update #: 169
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -149,13 +149,17 @@ Returns phabricator file id like FXXXX"
 	        (insert-file-contents-literally filename)
 	        (base64-encode-region (point-min) (point-max) t)
 	        (buffer-string)))
-         (data `(("api.token" . ,org-ph-fetch-api-token)
+         (api-token (if (functionp 'org-ph-fetch-api-token)
+                        (funcall 'org-ph-fetch-api-token)
+                      org-ph-fetch-api-token))
+         (data `(("api.token" . ,api-token)
                  ("data_base64" . ,file-content)
                  ("name" .  ,(file-name-nondirectory filename))))
          (phid nil)
          (error-info nil)
-         (request-backend 'url-retrieve))
+         (request-backend 'curl))
 
+    ;; catch errors
     (request (org-ph-fetch-endpoint-url "file.upload")
       :parser 'json-read
       :type "POST"
@@ -172,7 +176,7 @@ Returns phabricator file id like FXXXX"
               (lambda (&key error-thrown &allow-other-keys)
                 (error "Can't upload file: %S" (alist-get 'result error-thrown)))))
 
-    (let ((data `(("api.token" . ,org-ph-fetch-api-token)
+    (let ((data `(("api.token" . ,api-token)
                   ("constraints[phids][0]" . ,phid)))
           (file-id nil)
           (request-backend 'url-retrieve))
@@ -202,7 +206,10 @@ Returns phabricator file id like FXXXX"
          (error-info nil)
          (after (plist-get args :after))
          (constraints (apply 'org-ph-fetch--tasks-constraints args))
-         (data `(("api.token" . ,org-ph-fetch-api-token)
+         (api-token (if (functionp 'org-ph-fetch-api-token)
+                        (funcall 'org-ph-fetch-api-token)
+                      org-ph-fetch-api-token))
+         (data `(("api.token" . ,api-token)
                  ("limit" . "100")))
          (original-request-backend request-backend))
     (if after
