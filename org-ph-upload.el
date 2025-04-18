@@ -6,10 +6,10 @@
 ;; Maintainer:
 ;; Created: Сб мая 29 08:38:05 2021 (+0300)
 ;; Version:
-;; Package-Requires: ()
-;; Last-Updated:
-;;           By:
-;;     Update #: 164
+;; Package-Requires:
+;; Last-Updated: Mon Nov 18 14:26:22 2024 (+0400)
+;;           By: Renat Galimov
+;;     Update #: 175
 ;; URL:
 ;; Doc URL:
 ;; Keywords:
@@ -46,10 +46,13 @@
 ;;; Code:
 
 (require 'org-element)
+(require 'ox)
+(require 'org-attach)
+(require 'org-ph-fetch)
 
 (defun org-ph--set-file-id (element id)
-  "Set phabricator file ID to ELEMENT." (let* (
-         (attr-remarkup (org-export-read-attribute :attr_remarkup element))
+  "Set phabricator file ID to ELEMENT."
+  (let* ((attr-remarkup (org-export-read-attribute :attr_remarkup element))
          (element-copy (org-element-copy element))
          (element-begin (org-element-property :begin element))
          (element-text (buffer-substring element-begin (org-element-property :end element)))
